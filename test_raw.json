@@ -1,0 +1,24 @@
+[
+  {
+    "category": "Utilities",
+    "country": "US",
+    "chart": "free",
+    "rank": 1,
+    "app_id": "123456789",
+    "name": "Calculator",
+    "rss_url": "https://example.com/rss",
+    "fetched_at": "2025-08-19T04:43:09.420335",
+    "raw_data": null
+  },
+  {
+    "category": "Utilities",
+    "country": "US",
+    "chart": "free",
+    "rank": 2,
+    "app_id": "987654321",
+    "name": "Timer App",
+    "rss_url": "https://example.com/rss",
+    "fetched_at": "2025-08-19T04:43:09.420546",
+    "raw_data": null
+  }
+]
