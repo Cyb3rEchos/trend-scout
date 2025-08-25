@@ -8,16 +8,16 @@ class ProductionConfig:
     """Production configuration for legitimate data collection."""
     
     # Rate limiting settings (conservative for Apple's APIs)
-    RSS_RATE_LIMIT_DELAY = float(os.getenv("RSS_RATE_LIMIT_DELAY", "2.0"))
-    SCRAPE_RATE_LIMIT_DELAY = float(os.getenv("SCRAPE_RATE_LIMIT_DELAY", "3.0"))
+    RSS_RATE_LIMIT_DELAY = float(os.getenv("RSS_RATE_LIMIT_DELAY", "3.0"))
+    SCRAPE_RATE_LIMIT_DELAY = float(os.getenv("SCRAPE_RATE_LIMIT_DELAY", "5.0"))
     
     # Cache settings (longer caching to reduce API calls)
     HTML_CACHE_HOURS = int(os.getenv("HTML_CACHE_HOURS", "168"))  # 1 week
     RANK_CACHE_DAYS = int(os.getenv("RANK_CACHE_DAYS", "30"))
     
     # Request settings
-    REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "30"))
-    MAX_RETRIES = int(os.getenv("MAX_RETRIES", "5"))
+    REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "10"))
+    MAX_RETRIES = int(os.getenv("MAX_RETRIES", "2"))
     
     # User agents (rotate to avoid blocking)
     USER_AGENTS = [

@@ -61,8 +61,8 @@ class AppScraper:
         return f"https://apps.apple.com/{country}/app/id{app_id}"
     
     @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10)
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=1, min=3, max=8)
     )
     def fetch_app_page(self, app_id: str, country: str = "us") -> str:
         """Fetch app page HTML with retries.
@@ -80,27 +80,80 @@ class AppScraper:
         url = self.build_app_url(app_id, country)
         logger.debug(f"Fetching app page: {url}")
         
-        response = self.session.get(url, timeout=30)
+        response = self.session.get(url, timeout=10)
         response.raise_for_status()
         
-        # Handle content decompression and encoding properly
+        # Handle content decompression properly
         try:
-            # First try to use response.content and decode manually
-            content = response.content
-            # Try to decode as utf-8 first
-            try:
-                html = content.decode('utf-8')
-            except UnicodeDecodeError:
-                # Fallback to response.text with encoding detection
-                response.encoding = response.apparent_encoding or 'utf-8'
-                html = response.text
+            import gzip
+            import brotli
+            from io import BytesIO
             
+            content = response.content
+            
+            # Check if content is compressed and decompress accordingly
+            # First, try automatic decompression via response.text (requests handles this)
+            if response.text and not response.text.startswith('��'):
+                logger.debug("Using response.text (automatic decompression)")
+                return response.text
+            
+            # If that fails, manual decompression
+            logger.debug("Attempting manual decompression")
+            
+            # Try Brotli decompression first (common for modern sites)
+            if content.startswith(b'\x1b'):  # Brotli magic number
+                try:
+                    decompressed = brotli.decompress(content)
+                    html = decompressed.decode('utf-8')
+                    logger.debug("Successfully decompressed with Brotli")
+                    return html
+                except Exception as e:
+                    logger.debug(f"Brotli decompression failed: {e}")
+            
+            # Try Gzip decompression
+            if content.startswith(b'\x1f\x8b'):  # Gzip magic number
+                try:
+                    with gzip.GzipFile(fileobj=BytesIO(content)) as gz:
+                        decompressed = gz.read()
+                    html = decompressed.decode('utf-8')
+                    logger.debug("Successfully decompressed with Gzip")
+                    return html
+                except Exception as e:
+                    logger.debug(f"Gzip decompression failed: {e}")
+            
+            # Try deflate decompression
+            try:
+                import zlib
+                decompressed = zlib.decompress(content)
+                html = decompressed.decode('utf-8')
+                logger.debug("Successfully decompressed with deflate")
+                return html
+            except Exception as e:
+                logger.debug(f"Deflate decompression failed: {e}")
+            
+            # If all decompression attempts fail, try charset detection
+            try:
+                import chardet
+                detected = chardet.detect(content)
+                encoding = detected.get('encoding', 'utf-8')
+                html = content.decode(encoding)
+                logger.debug(f"Using detected encoding: {encoding}")
+                return html
+            except Exception as e:
+                logger.debug(f"Charset detection failed: {e}")
+            
+            # Final fallback - force UTF-8 with error handling
+            html = content.decode('utf-8', errors='replace')
+            logger.warning("Using UTF-8 with error replacement")
             return html
             
         except Exception as e:
-            logger.warning(f"Content decompression issue: {e}")
-            # Final fallback to response.text
-            return response.text
+            logger.error(f"All decompression attempts failed: {e}")
+            # Last resort fallback
+            try:
+                return response.text
+            except:
+                return content.decode('utf-8', errors='replace')
     
     def parse_app_page(self, html: str, app_id: str) -> AppPageData:
         """Parse app page HTML to extract key information.
