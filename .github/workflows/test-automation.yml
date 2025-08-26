@@ -52,12 +52,13 @@ jobs:
             cat automation_log.txt
           fi
 
-      - name: 📤 Upload test logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-logs-${{ github.run_number }}
-          path: |
-            automation_log.txt
-            *.log
-          retention-days: 3
+      # Upload disabled temporarily - focus on core automation test
+      # - name: 📤 Upload test logs  
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test-logs-${{ github.run_number }}
+      #     path: |
+      #       automation_log.txt
+      #       *.log
+      #     retention-days: 3
