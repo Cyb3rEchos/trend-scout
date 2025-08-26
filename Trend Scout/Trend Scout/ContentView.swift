@@ -15,10 +15,10 @@ struct ContentView: View {
                     Text("Categories")
                 }
             
-            AITestView()
+            CloneNameStudioView()
                 .tabItem {
                     Image(systemName: "sparkles")
-                    Text("AI Test")
+                    Text("Name Studio")
                 }
             
             SettingsView()

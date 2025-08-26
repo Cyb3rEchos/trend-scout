@@ -41,3 +41,7 @@ requests-cache>=1.0.0
 
 # Retry logic
 tenacity>=8.2.0
+
+# Compression support for web scraping
+brotli>=1.0.0
+brotlipy>=0.7.0
