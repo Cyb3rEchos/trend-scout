@@ -38,3 +38,6 @@ ratelimit>=2.2.0
 
 # HTTP caching
 requests-cache>=1.0.0
+
+# Retry logic
+tenacity>=8.2.0
