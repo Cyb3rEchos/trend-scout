@@ -1,0 +1,101 @@
+name: 📱 Daily Trend Scout Automation
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC (adjust timezone as needed)
+    - cron: '0 9 * * *'
+  
+  # Allow manual triggering from GitHub UI
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Run in test mode (limited categories)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  daily-scout:
+    name: 🚀 Collect App Store Trends
+    runs-on: ubuntu-latest
+    timeout-minutes: 90  # Allow up to 90 minutes for comprehensive collection
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Verify environment
+        run: |
+          echo "Python version: $(python --version)"
+          echo "Pip packages:"
+          pip list | grep -E "(requests|supabase|python-dotenv)"
+          echo "Working directory: $(pwd)"
+          ls -la
+
+      - name: 🤖 Run Daily Automation
+        env:
+          # Supabase credentials from repository secrets
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          
+          # Hugging Face API for AI recommendations
+          HUGGING_FACE_API_KEY: ${{ secrets.HUGGING_FACE_API_KEY }}
+          
+          # Production configuration
+          PYTHONPATH: ${{ github.workspace }}
+          
+        run: |
+          echo "🚀 Starting Trend Scout daily automation..."
+          echo "📅 Date: $(date)"
+          echo "🌍 Timezone: $(timedatectl show --property=Timezone || echo 'UTC')"
+          
+          # Run with test mode if specified
+          if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
+            echo "🧪 Running in TEST MODE (limited data)"
+            python daily_automation.py --test
+          else
+            echo "🏭 Running in PRODUCTION MODE (full collection)"
+            python daily_automation.py
+          fi
+
+      - name: 📊 Upload automation logs
+        if: always()  # Run even if previous steps failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: trend-scout-logs-${{ github.run_number }}
+          path: |
+            ~/Library/Logs/trendscout-*.log
+            automation_log.txt
+            *.log
+          retention-days: 7
+
+      - name: 💬 Report Results
+        if: always()
+        run: |
+          echo "📈 Daily automation completed!"
+          echo "🔗 Check Supabase dashboard for today's results"
+          echo "📊 View daily rankings table"
+          
+          # Show summary if automation succeeded
+          if [ -f "automation_log.txt" ]; then
+            echo "📋 Automation Summary:"
+            tail -20 automation_log.txt || echo "No summary available"
+          fi
+
+      - name: 🚨 Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Daily automation FAILED!"
+          echo "🔍 Check the logs above for error details"
+          echo "📱 This will appear in GitHub Actions notifications"

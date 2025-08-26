@@ -1,0 +1,63 @@
+name: 🧪 Test Automation (Manual)
+
+on:
+  # Only manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      categories:
+        description: 'Categories to test (comma-separated)'
+        required: false
+        default: 'Utilities,Productivity'
+
+jobs:
+  test-automation:
+    name: 🔬 Test Trend Scout
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🧪 Run Test Automation
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          HUGGING_FACE_API_KEY: ${{ secrets.HUGGING_FACE_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          echo "🧪 TESTING Trend Scout automation"
+          echo "📂 Testing with limited categories"
+          
+          # Run in test mode with limited scope
+          python daily_automation.py --test
+
+      - name: 📊 Show Test Results
+        if: always()
+        run: |
+          echo "🔍 Test completed - check logs above"
+          if [ -f "automation_log.txt" ]; then
+            echo "📋 Test Summary:"
+            cat automation_log.txt
+          fi
+
+      - name: 📤 Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-logs-${{ github.run_number }}
+          path: |
+            automation_log.txt
+            *.log
+          retention-days: 3

@@ -1,0 +1,40 @@
+# Trend Scout - GitHub Actions Requirements
+# Core dependencies for daily automation
+
+# Web scraping and HTTP
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# RSS feed parsing  
+feedparser>=6.0.0
+
+# Supabase client
+supabase>=1.0.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# AI/ML for recommendations
+openai>=1.0.0  # For Hugging Face compatible API calls
+
+# Data processing
+pandas>=2.0.0
+
+# Async support
+aiohttp>=3.8.0
+
+# Logging and utilities
+colorama>=0.4.0
+
+# Date/time utilities
+python-dateutil>=2.8.0
+
+# JSON processing
+ujson>=5.0.0
+
+# Rate limiting utilities
+ratelimit>=2.2.0
+
+# HTTP caching
+requests-cache>=1.0.0
